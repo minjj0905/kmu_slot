@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>★KMU 슬롯머신★</title>
+    <script src="web3.min.js"></script>
+    <script type="text/javascript">
+      let contractInstance;
+      let price;
+      let items = []
+      const rate = [0, 1, 1.5, 2, 3]
+      const address = "0xaEce23fC0590d86CA5fc7438dab500FA15A84ACe";
+      const imgs = [
+        "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fpaee7%2FbtrBst7nmrh%2FIKCczm0DLbWFlGo9gbZ8d0%2Fimg.png",
+        "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FA5Soc%2FbtrBrusnQHe%2FxWm6VvKVp8RTrypj7kfM80%2Fimg.png",
+        "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fbf0FHZ%2FbtrBtDBC3Pt%2FA7detK7dpsNvsdkBoWIvs1%2Fimg.png",
+        "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FZXVqA%2FbtrBtcQ8Wj5%2FLueUcd3ANAV5VJ1sTEr2gK%2Fimg.png",
+        "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fb3Tono%2FbtrBrOwINjL%2FsEbfAItTF8mEx4zOhPpMK0%2Fimg.png",
+        "https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FmJoZ5%2FbtrBs0jxkis%2FDk3nF7WpydNpqKKjRQkhA1%2Fimg.png",
+    ]
+
+      // moder dapp browser 검사
+      window.addEventListener("load", async () => {
+        if (!window.ethereum) {
+          alert(
+            "지원되지 않는 브라우저입니다. 메타마스크를 적용하세요."
+            );
+          document.querySelector(".mainContainer").innerHTML = "지원되지 않는 브라우저입니다. 메타마스크를 적용하세요.";
+        }
+        
+        const abiobj = [
+          {
+            "inputs": [],
+            "name": "playGame",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "register",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "setPrize",
+            "outputs": [],
+            "stateMutability": "payable",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "stateMutability": "payable",
+            "type": "constructor"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "result",
+                "type": "uint256"
+              }
+            ],
+            "name": "withdraw",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+              }
+            ],
+            "name": "managers",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "numManagers",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "price",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          }
+        ];
+
+        window.web3 = new Web3(window.ethereum);
+        contractInstance = await new window.web3.eth.Contract(abiobj, address);
+        price = await contractInstance.methods.price().call();
+        document.getElementById('price').innerHTML = price/1000000000000000000;
+      });
+
+      const rand = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      const playSlot = async () => {
+        if (contractInstance != null) {
+          try {
+            const result = document.getElementById('result');
+            result.innerHTML = "거래 완료 대기중입니다."
+            document.getElementById("playBtn").style.visibility = "hidden";
+            let value = await contractInstance.methods.playGame().send({from: accounts[0], value: 100000000000000000});            
+            let balance = await ethereum.request({ method:'eth_getBalance', params: [accounts[0], 'latest']}).catch((err) => console.error(err));
+            balance = parseInt(balance);
+            balance = balance/1000000000000000000
+            balance = balance.toLocaleString('ko-KR')
+            document.getElementById('balance').innerHTML = "잔액: " + balance + 'ETH';
+            price = await contractInstance.methods.price().call();
+            document.getElementById('price').innerHTML = price/1000000000000000000;
+            
+            result.innerHTML = "결과는?";
+            
+            items = []
+            for (let i=0; i<3; i++) {
+              items.push(rand(0,5));
+            }
+            let res = getResult(items);
+
+            const item1 = document.getElementById("item1");
+            const item2 = document.getElementById("item2");
+            const item3 = document.getElementById("item3");
+            let n1 = 0;
+            let n2 = 3;
+            let n3 = 5;
+
+            const changeImg = () => {
+              n1++;
+              n2++;
+              n3++;
+              if (n1 < 14 && n2 < 17 && n3 < 19) {
+                item1.src = imgs[n1 % 6];
+                item2.src = imgs[n2 % 6];
+                item3.src = imgs[n3 % 6];
+                tid = setTimeout(changeImg, 300);
+              } else {
+                clearTimeout(tid);
+                item1.src = imgs[items[0]];
+                item2.src = imgs[items[1]];
+                item3.src = imgs[items[2]];
+                if (!res) {
+                  document.getElementById("withdrawBtn").style.visibility = "hidden";
+                  document.getElementById("playBtn").style.visibility = "visible";
+                  result.innerHTML = "꽝이에요. 다음 기회를 노려보세요!"
+                } else {
+                  document.getElementById("withdrawBtn").style.visibility = "visible";
+                  document.getElementById("playBtn").style.visibility = "hidden";
+                  if(haveCat(items)) {
+                    result.innerHTML = "국냥이의 가호를 받아 베팅금액을 돌려받습니다!";
+                  } else if(res == 5) {
+                    result.innerHTML = "축하합니다! Jactpot! 누적된 " + price/1000000000000000000 + "ETH를 모두 받을 수 있습니다!";
+                  } else {
+                    result.innerHTML = "슬롯머신 완성! " + rate[res]*0.1 + "ETH를 받을 수 있습니다!";
+                  }
+                }
+              }
+            }
+            changeImg();
+          } catch (err) {
+            console.error(err);
+          }
+        } else {
+          alert("컨트랙트가 연결되지 않았습니다.\n 새로고침 후 다시 시도해주세요.");
+        }
+      }
+
+      const getResult = (arr) => {
+        if(arr[0] == arr[1] && arr[0] == arr[2] && arr[1] == arr[2]) {
+          return arr[0];
+        } else {
+          if(haveCat(arr)) return 1
+          return 0
+        }
+      }
+
+      const haveCat = (arr) => {
+        let checkCat = false;
+        for(let i=0; i<3; i++) {
+          if (arr[i] == 0) checkCat = true;
+        }
+        return checkCat;
+      }
+
+      const withdraw = async () => {
+        if (contractInstance != null) {
+          try {
+            let result = await contractInstance.methods
+                                    .withdraw(getResult(items))
+                                    .send({from: accounts[0]});
+            price = await contractInstance.methods.price().call();
+            document.getElementById('price').innerHTML = price/1000000000000000000;
+            let balance = await ethereum.request({ method:'eth_getBalance', params: [accounts[0], 'latest']}).catch((err) => console.error(err));
+            balance = parseInt(balance);
+            balance = balance/1000000000000000000
+            balance = balance.toLocaleString('ko-KR')
+            document.getElementById('balance').innerHTML = "잔액: " + balance + 'ETH';
+            document.getElementById('playBtn').style.visibility = "visible";
+            document.getElementById('withdrawBtn').style.visibility = "hidden";
+          } catch (err) {
+            console.error(err);
+          }
+        } else {
+          alert("컨트랙트가 연결되지 않았습니다.\n 새로고침 후 다시 시도해주세요.");
+        }
+      }
+
+      const linkAccount = async () => {
+        accounts = await ethereum.request({ method:'eth_requestAccounts'}).catch((err) => console.error(err));
+        document.getElementById('account').innerHTML = "계정: " + accounts[0].slice(0,5) + "..." + accounts[0].slice(-5);
+
+        let balance = await ethereum.request({ method:'eth_getBalance', params: [accounts[0], 'latest']}).catch((err) => console.error(err));
+        balance = parseInt(balance);
+        balance = balance/1000000000000000000
+        balance = balance.toLocaleString('ko-KR')
+        document.getElementById('balance').innerHTML = "잔액: " + balance + 'ETH';
+        document.getElementById('playBtn').style.visibility = "visible"
+      }
+    </script>
+    <style>
+      @font-face {
+        font-family: 'Happiness-Sans-Bold';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2205@1.0/Happiness-Sans-Bold.woff2') format('woff2');
+        font-weight: 700;
+        font-style: normal;
+      }
+      body {
+        background: linear-gradient(45deg, rgba(255, 0, 0, 0.7), rgba(255, 255, 0, 0.7));
+        background-repeat: no-repeat;
+        background-size: contain;
+        height: 100vh;
+        font-family: 'Happiness-Sans-Bold';
+        margin-top: 5rem;
+      }
+      .mainContainer {
+        font-family: 'Happiness-Sans-Bold';
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .slotContainer {
+        display: flex;
+        width: 30rem;
+        justify-content: space-between;
+      }
+      .btnContainer {
+        display: flex;
+        width: 30rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .title {
+        font-size: 3rem;
+        color: yellow;
+        text-shadow: -3px 0 #000, 0 3px #000, 3px 0 #000, 0 -3px #000;
+      }
+      .priceContainer {
+        display: flex;
+        align-items: center;
+      }
+      .priceTitle {
+        margin: 0 0.3rem;
+        font-size: 1.3rem;
+      }
+      #price {
+        font-size: 2rem;
+        color: white;
+        text-shadow: -2.5px 0 #000, 0 2.5px #000, 2.5px 0 #000, 0 -2.5px #000;
+
+      }
+      .btn {
+        background: inherit ;
+        border:none;
+        box-shadow:none;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        overflow:visible;
+        cursor:pointer;
+        font-family: 'Happiness-Sans-Bold';
+        background-color: #E0E1E2;
+        color: #5C5B6D;
+        height: 2rem;
+      }
+      .btn:hover {
+        color: #151515;
+        background-color: #CACBCD;
+      }
+      .accountContainer {
+        position: fixed;
+        right: 6rem;
+        padding: 1rem 2rem;
+        width: 12rem;
+        background-color: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 4px -4px black;
+      }
+      .slot {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        width: 1000px;
+        height: 393px;
+        background-image: url("https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2Fx7wEs%2FbtrBrsOQOo1%2F3L7OAexnV0VDO8JL9fRKK1%2Fimg.png");
+      }
+      #item1 {
+        margin-top: 1.5rem;
+        width: 130px !important;
+        margin-left: 18.5rem;
+      }
+      #item2 {
+        margin-top: 1.5rem;
+        width: 130px !important;
+      }
+      #item3 {
+        margin-top: 1.5rem;
+        width: 130px !important;
+        margin-right: 18.5rem;
+      }
+      @keyframes rainbowLink {     
+          0% { color: #ff2a2a; }
+          15% { color: #ff7a2a; }
+          30% { color: #ffc52a; }
+          45% { color: #43ff2a; }
+          60% { color: #2a89ff; }
+          75% { color: #202082; }
+          90% { color: #6b2aff; } 
+          100% { color: #e82aff; }
+          }
+      .playBtn {
+        animation-duration: 3s;
+        animation-name: rainbowLink;
+        animation-iteration-count: infinite;
+        background-color: white;
+        font-size: 2rem;
+        height: 4rem;
+      }
+      .rule {
+        animation-duration: 3s;
+        animation-name: rainbowLink;
+        animation-iteration-count: infinite;
+        margin: 0 1rem;
+        cursor: pointer;
+      }
+      .subContainer {
+        display: flex;
+        margin-top: 0.3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mainContainer">
+      <div class="title">★KMU 슬롯머신★</div>
+      <div>당✠신0ㅔㄱㅔ♤도 ㄷㅐ박❀의 ㄱ1호1ㄱㅏ✵?❉</div>
+      <!-- 테스트로 일단 github연결, 추후 룰 설명된 github repo로 이동 -->
+      <div class="subContainer">
+        <div class="rule" onclick="window.open('https://github.com/minjj0905/kmu_slot')" >룰 설명 페이지로 이동</div>
+        /
+        <div class="rule" onclick="window.open('https://www.youtube.com/watch?v=JuSV9wDJROs')">시연 영상</div>
+      </div>
+        <br />
+      <div class="priceContainer">
+        <div class="priceTitle">누적 상금은</div>
+        <div id="price"></div>
+        <div class="priceTitle">ETH 입니다!</div>
+      </div>
+      <div>이용요금 0.1ETH</div>
+      <br />
+        <div class="slot">
+          <img id="item1" src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FZXVqA%2FbtrBtcQ8Wj5%2FLueUcd3ANAV5VJ1sTEr2gK%2Fimg.png" />
+          <img id="item2" src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FZXVqA%2FbtrBtcQ8Wj5%2FLueUcd3ANAV5VJ1sTEr2gK%2Fimg.png" />
+          <img id="item3" src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FZXVqA%2FbtrBtcQ8Wj5%2FLueUcd3ANAV5VJ1sTEr2gK%2Fimg.png" />
+        </div>
+        
+        <div class="slotContainer">
+        </div>
+        <p id="result"></p>
+        <br />
+        <div class="btnContainer">
+          <button class="btn" onclick="linkAccount()">계정연결</button>
+          <button class="btn playBtn" id="playBtn" onclick="playSlot()" style="visibility: hidden;">게임시작</button>
+          <button class="btn" id="withdrawBtn" onclick="withdraw()" style="visibility: hidden;">금액 수령</button>
+        </div>
+        <br/>
+        <div class="accountContainer">
+          <p id="account">계정: </p>
+          <p id="balance">잔액: </p>
+        </div>
+  </body>
+</html>
