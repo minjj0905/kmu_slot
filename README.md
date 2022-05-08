@@ -9,6 +9,9 @@
 
 <br />
 
+![](https://github.com/minjj0905/kmu_slot/blob/main/%EA%B9%80%EB%AF%BC%EC%A0%95_%ED%95%9C%EC%9C%A4%EC%84%9D_page-0008.jpg?raw=true)
+
+
 ## 📚 Rule
 슬롯머신에는 총 세개의 슬롯이 존재하며, 각 슬롯에는 아래 여섯개의 이미지가 등장할 수 있습니다.
 이미지가 등장할 확률은 전부 동일합니다.
